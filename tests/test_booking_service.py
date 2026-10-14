@@ -4,7 +4,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from app.actions.service import ActionService
+from app.actions.service import ActionNotFound, ActionService, InvalidAction
 from app.api import SessionStore, create_app
 from app.bookings.service import BookingService
 from app.core.auth import get_current_actor
@@ -45,12 +45,12 @@ class BookingServiceTests(unittest.TestCase):
         self.assertEqual(len(self.service.my_bookings("resident-1")), 1)
 
     def test_past_move_in_date_is_rejected(self):
-        with self.assertRaises(Exception):
+        with self.assertRaises(InvalidAction):
             self.service.prepare_booking("resident-1", "LST-101", "2020-01-01", 3)
 
     def test_booking_action_is_actor_scoped(self):
         preview = self.service.prepare_booking("resident-1", "LST-101", "2026-11-01", 3)
-        with self.assertRaises(Exception):
+        with self.assertRaises(ActionNotFound):
             self.service.confirm("resident-2", preview.action_id)
 
     def test_api_create_list_and_cancel_by_selection(self):

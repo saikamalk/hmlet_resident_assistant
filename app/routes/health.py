@@ -1,9 +1,9 @@
 """Liveness and dependency-readiness probes."""
 from __future__ import annotations
 
-import os
 import sqlite3
 from contextlib import closing
+from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request
 
@@ -13,43 +13,71 @@ router = APIRouter()
 @router.get("/health", tags=["Health"])
 @router.get("/health/live", include_in_schema=False)
 def live():
-    """Liveness must not depend on external services."""
+    """Liveness is process-only and must not depend on external services."""
     return {"status": "ok"}
 
 
 def _check_sqlite_store(service, name: str) -> str | None:
-    """Check an initialized SQLite-backed service without creating new resources."""
+    """Check an initialized SQLite store without creating missing database files."""
     db_path = getattr(service, "db_path", None)
     if not db_path or db_path == ":memory:":
         return None
     try:
-        # sqlite3.connect() creates a missing file by default, which would make a
-        # broken store look healthy. Check existence first and open read/write only.
-        from pathlib import Path
-        if not Path(db_path).exists():
+        path = Path(db_path)
+        if not path.exists():
             return f"{name} storage is unavailable"
-        with closing(sqlite3.connect(f"file:{Path(db_path).resolve()}?mode=rw", uri=True, timeout=1)) as conn:
+        with closing(sqlite3.connect(f"file:{path.resolve()}?mode=rw", uri=True, timeout=1)) as conn:
             conn.execute("SELECT 1").fetchone()
         return None
     except (OSError, sqlite3.Error, ValueError):
         return f"{name} storage is unavailable"
 
 
+def _check_model(assistant) -> tuple[bool, str]:
+    """Return provider state without treating an injected wrapper as healthy by default."""
+    if assistant is None:
+        return False, "not_initialized"
+    model = getattr(assistant, "model", None)
+    health_check = getattr(model, "health_check", None)
+    if not callable(health_check):
+        return False, "unverified"
+    try:
+        healthy = bool(health_check())
+    except Exception:
+        healthy = False
+    return healthy, "healthy" if healthy else "unhealthy"
+
+
 @router.get("/ready", tags=["Health"])
 @router.get("/health/ready", include_in_schema=False)
 def ready(request: Request):
-    """Check configured dependencies; do not make a live LLM request per probe."""
+    """Check provider and storage readiness; never use this endpoint for liveness."""
     app = request.app
     assistant = app.state.assistant
-    llm_configured = assistant is not None or bool(os.getenv("GROQ_API_KEY"))
-    if not llm_configured:
-        raise HTTPException(status_code=503, detail="LLM provider is not configured.")
+    if assistant is None:
+        from app.core.config import settings
+        if not settings.groq_api_key:
+            raise HTTPException(status_code=503, detail={"status": "not_ready", "llm": "not_configured"})
+        # Initialize the lazy provider on the first readiness probe so a scheduler
+        # cannot deadlock by withholding traffic from an unready instance.
+        try:
+            from app.api_dependencies import get_assistant
+            assistant = get_assistant(request)
+        except Exception as exc:
+            raise HTTPException(
+                status_code=503, detail={"status": "not_ready", "llm": "initialization_failed"}
+            ) from exc
+
+    model_ok, model_state = _check_model(assistant)
+    if not model_ok:
+        raise HTTPException(status_code=503, detail={"status": "not_ready", "llm": model_state})
 
     limiter = app.state.rate_limiter
     try:
-        limiter.health_check()
-    except (AttributeError, RuntimeError):
-        raise HTTPException(status_code=503, detail="Rate limiter is unavailable.")
+        if limiter.health_check() is False:
+            raise RuntimeError("rate limiter health check returned false")
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail={"status": "not_ready", "rate_limiter": "unhealthy"}) from exc
 
     storage_errors = []
     for service, name in (
@@ -65,7 +93,7 @@ def ready(request: Request):
 
     return {
         "status": "ready",
-        "llm": "injected" if assistant is not None else "configured",
+        "llm": model_state,
         "rate_limiter": "redis" if limiter.distributed else "local-dev",
         "storage": "healthy" if any((app.state.action_service, app.state.session_store)) else "lazy",
     }

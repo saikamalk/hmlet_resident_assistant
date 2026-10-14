@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from typing import Protocol
 
 from app.assistant.guardrails import UNKNOWN_ANSWER
@@ -28,6 +29,10 @@ Use only exact source IDs shown in the evidence. Never invent a source ID.
 
 
 class GroqChatModel:
+    """Groq chat adapter with a short-lived, bounded readiness probe."""
+
+    _HEALTH_CACHE_SECONDS = 15.0
+
     def __init__(self, client=None, model: str | None = None):
         if client is None:
             if not settings.groq_api_key:
@@ -40,13 +45,26 @@ class GroqChatModel:
             )
         self.client = client
         self.model = model or settings.groq_model
+        self._health_checked_at = 0.0
+        self._health_ok = False
 
-    def health_check(self) -> bool:
+    def health_check(self, *, force: bool = False) -> bool:
+        """Check provider connectivity/model visibility, cached for 15 seconds.
+
+        The request has a two-second timeout so a readiness probe cannot hang for the
+        normal answer-generation timeout. Failure is reported as unhealthy, not raised.
+        """
+        now = time.monotonic()
+        if not force and now - self._health_checked_at < self._HEALTH_CACHE_SECONDS:
+            return self._health_ok
+        self._health_checked_at = now
         try:
-            self.client.models.list()
-            return True
+            response = self.client.models.list(timeout=2.0)
+            model_ids = {getattr(item, "id", None) for item in getattr(response, "data", [])}
+            self._health_ok = self.model in model_ids
         except Exception:
-            return False
+            self._health_ok = False
+        return self._health_ok
 
     def answer(self, question: str, evidence: list[Evidence]) -> str:
         evidence_text = "\n\n".join(
