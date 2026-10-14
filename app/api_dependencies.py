@@ -55,3 +55,19 @@ def enforce_limit(request: Request, actor):
     except RateLimitExceeded as exc:
         raise HTTPException(status_code=429, detail="Too many requests. Please retry later.",
                             headers={"Retry-After": str(limiter.window_seconds)}) from exc
+
+
+def confirm_pending_action(request: Request, actions, actor_id: str, action_id: str):
+    """Route all confirmation channels through the same action dispatcher."""
+    from app.actions.dispatch import confirm_actor_action
+
+    bookings = get_bookings(request) if hasattr(actions, "db_path") else None
+    return confirm_actor_action(actions, bookings, actor_id, action_id)
+
+
+def decline_pending_action(request: Request, actions, actor_id: str, action_id: str) -> None:
+    """Route all decline channels through the same action dispatcher."""
+    from app.actions.dispatch import decline_actor_action
+
+    bookings = get_bookings(request) if hasattr(actions, "db_path") else None
+    decline_actor_action(actions, bookings, actor_id, action_id)

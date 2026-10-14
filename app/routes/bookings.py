@@ -7,13 +7,13 @@ from app.core.auth import get_current_actor
 router = APIRouter()
 
 
-@router.get("/v1/bookings", tags=["Bookings"])
+@router.get("/bookings", tags=["Bookings"])
 def list_my_bookings(request: Request, actor=Depends(get_current_actor), actions=Depends(get_actions)):
     enforce_limit(request, actor)
     return {"mode": "local-demo", "bookings": get_bookings(request).my_bookings(actor["actor_id"])}
 
 
-@router.get("/v1/availability", tags=["Bookings"])
+@router.get("/availability", tags=["Bookings"])
 def search_availability(request: Request, start_date: str | None = None, stay_months: int | None = None,
                         city: str | None = None, actor=Depends(get_current_actor)):
     enforce_limit(request, actor)

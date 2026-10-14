@@ -61,3 +61,17 @@ class RateLimiter:
             if len(events) >= self.limit:
                 raise RateLimitExceeded("Rate limit exceeded")
             events.append(now)
+
+    def health_check(self) -> bool:
+        """Return whether the configured limiter backend is reachable."""
+        if self._redis is None:
+            return True
+        try:
+            return bool(self._redis.ping())
+        except Exception as exc:
+            raise RuntimeError("Redis rate limiter is unavailable") from exc
+
+    def close(self) -> None:
+        """Close the Redis connection pool during application shutdown."""
+        if self._redis is not None:
+            self._redis.close()

@@ -7,7 +7,9 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.actions.intake import NaturalLanguageActionIntake
 from app.actions.service import ActionError, ActionPreview
-from app.api_dependencies import enforce_limit, get_actions, get_assistant, get_bookings, get_sessions
+from app.api_dependencies import (
+    confirm_pending_action, decline_pending_action, enforce_limit, get_actions, get_assistant, get_bookings, get_sessions,
+)
 from app.api_schemas import MessageRequest, MessageResponse
 from app.bookings.service import BookingService
 from app.core.auth import get_current_actor
@@ -25,7 +27,7 @@ def _preview(preview: ActionPreview):
             "summary": preview.summary, "expires_at": preview.expires_at}
 
 
-@router.post("/v1/sessions/{session_id}/messages", response_model=MessageResponse)
+@router.post("/sessions/{session_id}/messages", response_model=MessageResponse)
 def send_message(session_id: str, body: MessageRequest, request: Request, actor=Depends(get_current_actor),
                  sessions=Depends(get_sessions), actions=Depends(get_actions),
                  resident_assistant=Depends(get_assistant)):
@@ -40,20 +42,14 @@ def send_message(session_id: str, body: MessageRequest, request: Request, actor=
     try:
         if text.startswith("/confirm "):
             action_id = text[len("/confirm "):].strip()
-            if hasattr(actions, "db_path") and get_bookings(request).is_booking_action(actor_id, action_id):
-                result = get_bookings(request).confirm(actor_id, action_id)
-            else:
-                result = actions.confirm(actor_id, action_id)
+            result = confirm_pending_action(request, actions, actor_id, action_id)
             answer, state, action = result.result.get("message", "Action completed."), result.status, {
                 "action_id": result.action_id, "action_type": result.action_type, "status": result.status,
                 "replayed": result.replayed}
             sessions.save_draft(session_id, actor_id, None)
         elif text.startswith("/decline "):
             action_id = text[len("/decline "):].strip()
-            if hasattr(actions, "db_path") and get_bookings(request).is_booking_action(actor_id, action_id):
-                get_bookings(request).decline(actor_id, action_id)
-            else:
-                actions.decline(actor_id, action_id)
+            decline_pending_action(request, actions, actor_id, action_id)
             answer, state, action = "Action declined. No change was made.", "action_declined", {"action_id": action_id,
                                                                                                 "status": "declined"}
             sessions.save_draft(session_id, actor_id, None)

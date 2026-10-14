@@ -41,6 +41,13 @@ class GroqChatModel:
         self.client = client
         self.model = model or settings.groq_model
 
+    def health_check(self) -> bool:
+        try:
+            self.client.models.list()
+            return True
+        except Exception:
+            return False
+
     def answer(self, question: str, evidence: list[Evidence]) -> str:
         evidence_text = "\n\n".join(
             f"[Source ID: {item.source}; retrieval score={item.score:.3f}]\n{item.text}"
