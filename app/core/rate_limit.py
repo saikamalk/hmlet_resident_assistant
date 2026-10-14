@@ -8,11 +8,12 @@ import os
 import threading
 import time
 from collections import defaultdict, deque
-from typing import cast
 
 
 class RateLimitExceeded(Exception):
-    pass
+    def __init__(self, message: str, retry_after: int | None = None):
+        super().__init__(message)
+        self.retry_after = retry_after
 
 
 class RateLimiter:
@@ -28,8 +29,12 @@ class RateLimiter:
         if self.redis_url:
             try:
                 import redis
-                self._redis = redis.Redis.from_url(self.redis_url, decode_responses=True,
-                                                   socket_connect_timeout=1, socket_timeout=1)
+                self._redis = redis.Redis.from_url(
+                    self.redis_url,
+                    decode_responses=True,
+                    socket_connect_timeout=1,
+                    socket_timeout=1,
+                )
                 self._redis.ping()
             except Exception as exc:
                 raise RuntimeError("Configured Redis rate limiter is unavailable") from exc
@@ -43,15 +48,21 @@ class RateLimiter:
     def check(self, actor_id: str) -> None:
         now = time.time()
         if self._redis is not None:
-            # Atomic fixed-window counter, shared across workers/instances.
             bucket = int(now // self.window_seconds)
             key = f"hmlet:ratelimit:{actor_id}:{bucket}"
-            count = cast(int, self._redis.incr(key))
-            if count == 1:
-                self._redis.expire(key, self.window_seconds + 1)
+            # Increment and TTL assignment are atomic so a process crash cannot
+            # leave a counter key without an expiry.
+            script = (
+                "local count = redis.call('INCR', KEYS[1]); "
+                "if count == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]); end; "
+                "return count"
+            )
+            count = int(self._redis.eval(script, 1, key, self.window_seconds + 1))
             if count > self.limit:
-                raise RateLimitExceeded("Rate limit exceeded")
+                retry_after = self.window_seconds - (int(now) % self.window_seconds)
+                raise RateLimitExceeded("Rate limit exceeded", max(1, retry_after))
             return
+
         # Local fallback is for development/tests only; not shared between workers.
         with self._lock:
             events = self._events[actor_id]
@@ -59,7 +70,8 @@ class RateLimiter:
             while events and events[0] <= cutoff:
                 events.popleft()
             if len(events) >= self.limit:
-                raise RateLimitExceeded("Rate limit exceeded")
+                retry_after = max(1, int(events[0] + self.window_seconds - now) + 1)
+                raise RateLimitExceeded("Rate limit exceeded", retry_after)
             events.append(now)
 
     def health_check(self) -> bool:

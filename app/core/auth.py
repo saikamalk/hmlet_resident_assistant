@@ -35,17 +35,21 @@ def get_current_actor(
             "claims": {"sub": "local-dev-user"},
         }
 
-    # Keep the existing OIDC/JWT validation below this point.
     jwks_url = os.getenv("AUTH_JWKS_URL")
     issuer = os.getenv("AUTH_ISSUER")
     audience = os.getenv("AUTH_AUDIENCE")
 
     if not (jwks_url and issuer and audience):
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                            detail="Authentication provider is not configured.")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication provider is not configured.",
+        )
     if credentials is None or credentials.scheme.lower() != "bearer":
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Bearer token required.", headers={"WWW-Authenticate": "Bearer"})
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Bearer token required.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     try:
         signing_key = _jwks_client(jwks_url).get_signing_key_from_jwt(credentials.credentials).key
         claims = jwt.decode(
@@ -61,8 +65,10 @@ def get_current_actor(
         if not isinstance(subject, str) or not subject.strip() or len(subject) > 256:
             raise jwt.InvalidTokenError("Invalid subject")
         return {"actor_id": subject, "claims": claims}
-    except (jwt.PyJWTError, Exception) as exc:
-        # Do not return token, claim or cryptographic details to callers.
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Invalid or expired access token.",
-                            headers={"WWW-Authenticate": "Bearer"}) from exc
+    except Exception as exc:
+        # Normalize token/JWKS failures without exposing cryptographic details.
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired access token.",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc

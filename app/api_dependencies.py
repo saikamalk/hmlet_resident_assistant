@@ -3,7 +3,6 @@ from pathlib import Path
 
 from fastapi import HTTPException, Request
 
-from app.actions.dispatch import confirm_actor_action, decline_actor_action
 from app.actions.service import ActionService
 from app.assistant.llm import GroqChatModel
 from app.assistant.service import ResidentAssistant
@@ -60,7 +59,7 @@ def enforce_limit(request: Request, actor):
         raise HTTPException(
             status_code=429,
             detail="Too many requests. Please retry later.",
-            headers={"Retry-After": str(limiter.window_seconds)},
+            headers={"Retry-After": str(exc.retry_after or limiter.window_seconds)},
         ) from exc
 
 

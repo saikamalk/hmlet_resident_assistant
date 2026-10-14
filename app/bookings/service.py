@@ -16,8 +16,8 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from app.actions.service import ActionError, ActionPreview, ActionNotFound, InvalidAction
 from app.actions.intake import Draft
+from app.actions.service import ActionError, ActionPreview, ActionNotFound, InvalidAction, ActionExpired
 
 
 class BookingService:
@@ -343,7 +343,7 @@ class BookingService:
             if self._now().timestamp() >= row["expires_epoch"]:
                 conn.execute("UPDATE booking_pending_actions SET status='expired' WHERE action_id=?", (action_id,));
                 conn.commit()
-                raise InvalidAction("Confirmation expired. Please prepare the booking request again.")
+                raise ActionExpired("Confirmation expired. Please prepare the booking request again.")
             if hashlib.sha256(row["payload_json"].encode()).hexdigest() != row["payload_sha256"]:
                 conn.rollback();
                 raise InvalidAction("Booking preview integrity check failed; no booking was created.")

@@ -1,6 +1,7 @@
 """Liveness and dependency-readiness probes."""
 from __future__ import annotations
 
+import os
 import sqlite3
 from contextlib import closing
 from pathlib import Path
@@ -51,8 +52,22 @@ def _check_model(assistant) -> tuple[bool, str]:
 @router.get("/ready", tags=["Health"])
 @router.get("/health/ready", include_in_schema=False)
 def ready(request: Request):
-    """Check provider and storage readiness; never use this endpoint for liveness."""
+    """Check configured production dependencies and initialized stores; not a liveness probe."""
     app = request.app
+
+    # Protected endpoints return 503 when OIDC is misconfigured. Do not let a
+    # production deployment report ready while every protected endpoint will fail.
+    if os.getenv("APP_ENV", "development").lower() == "production":
+        missing_auth = [
+            name for name in ("AUTH_JWKS_URL", "AUTH_ISSUER", "AUTH_AUDIENCE")
+            if not os.getenv(name)
+        ]
+        if missing_auth:
+            raise HTTPException(
+                status_code=503,
+                detail={"status": "not_ready", "auth": "not_configured"},
+            )
+
     assistant = app.state.assistant
     if assistant is None:
         from app.core.config import settings
@@ -80,20 +95,26 @@ def ready(request: Request):
         raise HTTPException(status_code=503, detail={"status": "not_ready", "rate_limiter": "unhealthy"}) from exc
 
     storage_errors = []
-    for service, name in (
+    initialized_stores = (
         (app.state.action_service, "Action"),
         (app.state.session_store, "Session"),
         (app.state.booking_service, "Booking"),
-    ):
+    )
+    for service, name in initialized_stores:
         error = _check_sqlite_store(service, name)
         if error:
             storage_errors.append(error)
     if storage_errors:
         raise HTTPException(status_code=503, detail={"status": "not_ready", "errors": storage_errors})
 
+    # "lazy" is intentional: stores not yet initialized are not created as a side
+    # effect of a health probe. This endpoint validates all initialized stores only.
+    storage_state = (
+        "healthy" if all(service is not None for service, _ in initialized_stores) else "lazy"
+    )
     return {
         "status": "ready",
         "llm": model_state,
         "rate_limiter": "redis" if limiter.distributed else "local-dev",
-        "storage": "healthy" if any((app.state.action_service, app.state.session_store)) else "lazy",
+        "storage": storage_state,
     }

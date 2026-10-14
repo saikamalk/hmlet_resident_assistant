@@ -1,10 +1,12 @@
 import tempfile
 import unittest
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
-from app.actions.service import ActionNotFound, ActionService, InvalidAction
+from app.actions.service import ActionNotFound, ActionService, InvalidAction, ActionExpired
 from app.api import SessionStore, create_app
 from app.bookings.service import BookingService
 from app.core.auth import get_current_actor
@@ -21,10 +23,17 @@ class BookingServiceTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)
+        self._clock_patch = patch.object(
+            BookingService,
+            "_now",
+            return_value=datetime(2026, 10, 1, tzinfo=timezone.utc),
+        )
+        self._clock_patch.start()
         self.actions = ActionService(str(self.root / "actions.sqlite3"))
         self.service = BookingService(self.actions, Path(__file__).resolve().parents[1] / "data")
 
     def tearDown(self):
+        self._clock_patch.stop()
         self.tmp.cleanup()
 
     def test_availability_respects_start_date_and_minimum_stay(self):
@@ -43,6 +52,13 @@ class BookingServiceTests(unittest.TestCase):
         replay = self.service.confirm("resident-1", preview.action_id)
         self.assertTrue(replay.replayed)
         self.assertEqual(len(self.service.my_bookings("resident-1")), 1)
+
+    def test_expired_booking_action_raises_specific_exception(self):
+        preview = self.service.prepare_booking("resident-1", "LST-101", "2026-11-01", 3)
+        future = datetime.now(timezone.utc) + timedelta(minutes=20)
+        with patch.object(self.service, "_now", return_value=future):
+            with self.assertRaises(ActionExpired):
+                self.service.confirm("resident-1", preview.action_id)
 
     def test_past_move_in_date_is_rejected(self):
         with self.assertRaises(InvalidAction):

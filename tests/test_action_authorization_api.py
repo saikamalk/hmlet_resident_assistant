@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
@@ -14,6 +16,7 @@ from app.core.auth import get_current_actor
 from app.core.rate_limit import RateLimiter
 from app.schemas import AssistantResponse
 
+
 class FakeAssistant:
     # This test exercises action routes, not LLM readiness.
     def respond(self, message):
@@ -23,6 +26,12 @@ class FakeAssistant:
 class ActionAuthorizationApiTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
+        self._clock_patch = patch.object(
+            BookingService,
+            "_now",
+            return_value=datetime(2026, 10, 1, tzinfo=timezone.utc),
+        )
+        self._clock_patch.start()
         root = Path(self.tmp.name)
         self.actions = ActionService(root / "actions.sqlite3")
         self.sessions = SessionStore(str(root / "sessions.sqlite3"))
@@ -54,6 +63,7 @@ class ActionAuthorizationApiTests(unittest.TestCase):
 
     def tearDown(self):
         self.client.close()
+        self._clock_patch.stop()
         self.tmp.cleanup()
 
     def _maintenance_action(self):
