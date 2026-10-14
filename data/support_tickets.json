@@ -1,0 +1,164 @@
+[
+  {
+    "ticket_id": "TKT-2001",
+    "resident_id": "RES-3391",
+    "category": "maintenance",
+    "subject": "Leaking bathroom tap",
+    "message": "The bathroom tap in my room has been dripping constantly since yesterday. Can someone come take a look? It's Room 4 at Riverside House.",
+    "status": "resolved",
+    "priority": "medium"
+  },
+  {
+    "ticket_id": "TKT-2002",
+    "resident_id": "RES-3402",
+    "category": "billing",
+    "subject": "Invoice shows wrong amount",
+    "message": "My invoice for this month shows $1,650 but I signed up for the $1,450 single room. Can you check this?",
+    "status": "resolved",
+    "priority": "high"
+  },
+  {
+    "ticket_id": "TKT-2003",
+    "resident_id": "RES-3415",
+    "category": "booking",
+    "subject": "Want to extend my stay",
+    "message": "My contract ends next month and I'd like to extend for another 3 months. What do I need to do?",
+    "status": "resolved",
+    "priority": "low"
+  },
+  {
+    "ticket_id": "TKT-2004",
+    "resident_id": "RES-3427",
+    "category": "maintenance",
+    "subject": "AC not cooling properly",
+    "message": "The air conditioning in my room barely cools anymore, even on the lowest setting. It's been like this for 3 days.",
+    "status": "in_progress",
+    "priority": "high"
+  },
+  {
+    "ticket_id": "TKT-2005",
+    "resident_id": "RES-3438",
+    "category": "billing",
+    "subject": "Requesting a receipt for taxes",
+    "message": "I need an official receipt for the rent I paid over the last 6 months for my company's tax filing. Can you send that over?",
+    "status": "resolved",
+    "priority": "low"
+  },
+  {
+    "ticket_id": "TKT-2006",
+    "resident_id": "RES-3450",
+    "category": "booking",
+    "subject": "Cancelling my upcoming move-in",
+    "message": "Something came up and I need to cancel my booking that was supposed to start next week. What's the process and will I get my deposit back?",
+    "status": "in_progress",
+    "priority": "high"
+  },
+  {
+    "ticket_id": "TKT-2007",
+    "resident_id": "RES-3462",
+    "category": "maintenance",
+    "subject": "Wifi keeps dropping",
+    "message": "The wifi in the common area and my room keeps disconnecting every hour or so. Anyone else facing this?",
+    "status": "resolved",
+    "priority": "medium"
+  },
+  {
+    "ticket_id": "TKT-2008",
+    "resident_id": "RES-3474",
+    "category": "general",
+    "subject": "Can I bring a pet?",
+    "message": "I'm thinking of adopting a small cat. Is that allowed in my room at Maple Court?",
+    "status": "resolved",
+    "priority": "low"
+  },
+  {
+    "ticket_id": "TKT-2009",
+    "resident_id": "RES-3485",
+    "category": "billing",
+    "subject": "Late payment fee dispute",
+    "message": "I was charged a late fee but I paid on the 3rd, which I thought was within the grace period. Can this be reviewed?",
+    "status": "in_progress",
+    "priority": "medium"
+  },
+  {
+    "ticket_id": "TKT-2010",
+    "resident_id": "RES-3497",
+    "category": "maintenance",
+    "subject": "Broken window latch",
+    "message": "The latch on my window won't lock properly anymore. A bit worried about security. Room 12, Orchid Gardens.",
+    "status": "open",
+    "priority": "high"
+  },
+  {
+    "ticket_id": "TKT-2011",
+    "resident_id": "RES-3508",
+    "category": "booking",
+    "subject": "Switching to a different room",
+    "message": "Is it possible to switch from my shared room to a private room in the same property once one becomes available?",
+    "status": "resolved",
+    "priority": "low"
+  },
+  {
+    "ticket_id": "TKT-2012",
+    "resident_id": "RES-3519",
+    "category": "general",
+    "subject": "Guest policy question",
+    "message": "Can I have a friend stay over for a few nights? What's the process for that?",
+    "status": "resolved",
+    "priority": "low"
+  },
+  {
+    "ticket_id": "TKT-2013",
+    "resident_id": "RES-3530",
+    "category": "maintenance",
+    "subject": "Mold in the shared bathroom",
+    "message": "There's visible mold forming near the shower tiles in the shared bathroom on the 2nd floor at Maple Court. Please address soon, it's a health concern.",
+    "status": "open",
+    "priority": "high"
+  },
+  {
+    "ticket_id": "TKT-2014",
+    "resident_id": "RES-3542",
+    "category": "billing",
+    "subject": "Deposit refund timeline",
+    "message": "I moved out two weeks ago. How long does the deposit refund usually take?",
+    "status": "resolved",
+    "priority": "medium"
+  },
+  {
+    "ticket_id": "TKT-2015",
+    "resident_id": "RES-3553",
+    "category": "booking",
+    "subject": "Early move-in request",
+    "message": "My lease starts on the 15th but I'm wondering if I could move in a few days early. Is that possible and does it cost extra?",
+    "status": "resolved",
+    "priority": "low"
+  },
+  {
+    "ticket_id": "TKT-2016",
+    "resident_id": "RES-3565",
+    "category": "general",
+    "subject": "Noise complaint about neighbor",
+    "message": "My neighbor has been playing loud music late at night for the past few days. How do I report this?",
+    "status": "in_progress",
+    "priority": "medium"
+  },
+  {
+    "ticket_id": "TKT-2017",
+    "resident_id": "RES-3576",
+    "category": "maintenance",
+    "subject": "Kitchen stove not igniting",
+    "message": "One of the stove burners in the shared kitchen won't ignite anymore at Harbour View Residences.",
+    "status": "open",
+    "priority": "medium"
+  },
+  {
+    "ticket_id": "TKT-2018",
+    "resident_id": "RES-3587",
+    "category": "billing",
+    "subject": "Question about utility charges",
+    "message": "Are utilities included in the monthly rent or billed separately? My invoice doesn't make it clear.",
+    "status": "resolved",
+    "priority": "low"
+  }
+]

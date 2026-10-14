@@ -1,0 +1,173 @@
+[
+  {
+    "listing_id": "LST-101",
+    "property_name": "Riverside House",
+    "room_type": "Private Room (Single)",
+    "city": "Singapore",
+    "monthly_rent_sgd": 1450,
+    "deposit_sgd": 1450,
+    "available_from": "2026-10-01",
+    "min_stay_months": 3,
+    "amenities": [
+      "ensuite bathroom",
+      "shared kitchen",
+      "high-speed wifi",
+      "weekly cleaning"
+    ],
+    "status": "available"
+  },
+  {
+    "listing_id": "LST-102",
+    "property_name": "Riverside House",
+    "room_type": "Private Room (Double)",
+    "city": "Singapore",
+    "monthly_rent_sgd": 1650,
+    "deposit_sgd": 1650,
+    "available_from": "2026-11-15",
+    "min_stay_months": 3,
+    "amenities": [
+      "ensuite bathroom",
+      "shared kitchen",
+      "high-speed wifi",
+      "weekly cleaning",
+      "balcony"
+    ],
+    "status": "available"
+  },
+  {
+    "listing_id": "LST-103",
+    "property_name": "Maple Court",
+    "room_type": "Shared Room (Twin)",
+    "city": "Singapore",
+    "monthly_rent_sgd": 980,
+    "deposit_sgd": 980,
+    "available_from": "2026-09-20",
+    "min_stay_months": 1,
+    "amenities": [
+      "shared bathroom",
+      "shared kitchen",
+      "high-speed wifi",
+      "weekly cleaning"
+    ],
+    "status": "available"
+  },
+  {
+    "listing_id": "LST-104",
+    "property_name": "Maple Court",
+    "room_type": "Private Room (Single)",
+    "city": "Singapore",
+    "monthly_rent_sgd": 1350,
+    "deposit_sgd": 1350,
+    "available_from": null,
+    "min_stay_months": 3,
+    "amenities": [
+      "shared bathroom",
+      "shared kitchen",
+      "high-speed wifi",
+      "weekly cleaning"
+    ],
+    "status": "occupied"
+  },
+  {
+    "listing_id": "LST-105",
+    "property_name": "Harbour View Residences",
+    "room_type": "Studio",
+    "city": "Hong Kong",
+    "monthly_rent_hkd": 9800,
+    "deposit_hkd": 9800,
+    "available_from": "2026-10-05",
+    "min_stay_months": 6,
+    "amenities": [
+      "ensuite bathroom",
+      "kitchenette",
+      "high-speed wifi",
+      "gym access"
+    ],
+    "status": "available"
+  },
+  {
+    "listing_id": "LST-106",
+    "property_name": "Harbour View Residences",
+    "room_type": "Private Room (Single)",
+    "city": "Hong Kong",
+    "monthly_rent_hkd": 7200,
+    "deposit_hkd": 7200,
+    "available_from": "2026-09-28",
+    "min_stay_months": 3,
+    "amenities": [
+      "shared bathroom",
+      "shared kitchen",
+      "high-speed wifi"
+    ],
+    "status": "available"
+  },
+  {
+    "listing_id": "LST-107",
+    "property_name": "Sakura Terrace",
+    "room_type": "Private Room (Single)",
+    "city": "Tokyo",
+    "monthly_rent_jpy": 98000,
+    "deposit_jpy": 98000,
+    "available_from": "2026-10-10",
+    "min_stay_months": 3,
+    "amenities": [
+      "shared bathroom",
+      "shared kitchen",
+      "high-speed wifi",
+      "weekly cleaning"
+    ],
+    "status": "available"
+  },
+  {
+    "listing_id": "LST-108",
+    "property_name": "Sakura Terrace",
+    "room_type": "Private Room (Double)",
+    "city": "Tokyo",
+    "monthly_rent_jpy": 118000,
+    "deposit_jpy": 118000,
+    "available_from": null,
+    "min_stay_months": 3,
+    "amenities": [
+      "ensuite bathroom",
+      "shared kitchen",
+      "high-speed wifi",
+      "weekly cleaning",
+      "balcony"
+    ],
+    "status": "occupied"
+  },
+  {
+    "listing_id": "LST-109",
+    "property_name": "Orchid Gardens",
+    "room_type": "Private Room (Single)",
+    "city": "Singapore",
+    "monthly_rent_sgd": 1550,
+    "deposit_sgd": 1550,
+    "available_from": "2026-12-01",
+    "min_stay_months": 6,
+    "amenities": [
+      "ensuite bathroom",
+      "shared kitchen",
+      "high-speed wifi",
+      "weekly cleaning",
+      "pool access"
+    ],
+    "status": "available"
+  },
+  {
+    "listing_id": "LST-110",
+    "property_name": "Orchid Gardens",
+    "room_type": "Shared Room (Twin)",
+    "city": "Singapore",
+    "monthly_rent_sgd": 890,
+    "deposit_sgd": 890,
+    "available_from": "2026-09-30",
+    "min_stay_months": 1,
+    "amenities": [
+      "shared bathroom",
+      "shared kitchen",
+      "high-speed wifi"
+    ],
+    "status": "available"
+  }
+]
