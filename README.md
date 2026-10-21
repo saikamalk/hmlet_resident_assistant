@@ -77,7 +77,7 @@ The project includes unit tests and offline evaluation scripts for retrieval, gu
 
 The following results were obtained on the reviewed version on October 14, 2026:
 
-- **Unit tests:** 75 passed
+- **Unit tests:** 91 passed
 - **Security tests:** 10/10 passed
 - **Retrieval and guardrail evaluation:** 18/18 passed
 - **Answer routing:** 18/18 cases matched the expected outcomes
